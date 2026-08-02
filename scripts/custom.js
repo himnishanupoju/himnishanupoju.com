@@ -111,25 +111,37 @@
 
   // ---------- Dock magnification ----------
   // macOS dock effect: each icon's scale/lift falls off linearly with its
-  // horizontal distance from the cursor, capped at maxDist.
+  // horizontal distance from the cursor, capped at maxDist. Only wired up
+  // on devices with a real pointer — on touch, tapping a link (e.g. email)
+  // navigates away, and there's no mouseleave to reset the scale/tooltip
+  // when the user comes back, leaving an icon stuck enlarged.
   const dockItems = [...dock.querySelectorAll('.dock-item')];
   const maxDist = 110;
   const maxScale = 1.5;
 
-  dock.addEventListener('mousemove', (e) => {
-    dockItems.forEach((item) => {
-      const rect = item.getBoundingClientRect();
-      const center = rect.left + rect.width / 2;
-      const dist = Math.abs(e.clientX - center);
-      const scale = Math.max(1, maxScale - (dist / maxDist) * (maxScale - 1));
-      const lift = (scale - 1) * 18;
-      item.style.transform = `translateY(${-lift}px) scale(${scale})`;
-    });
-  });
-
-  dock.addEventListener('mouseleave', () => {
+  function resetDockItems() {
     dockItems.forEach((item) => {
       item.style.transform = '';
     });
-  });
+  }
+
+  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    dock.addEventListener('mousemove', (e) => {
+      dockItems.forEach((item) => {
+        const rect = item.getBoundingClientRect();
+        const center = rect.left + rect.width / 2;
+        const dist = Math.abs(e.clientX - center);
+        const scale = Math.max(1, maxScale - (dist / maxDist) * (maxScale - 1));
+        const lift = (scale - 1) * 18;
+        item.style.transform = `translateY(${-lift}px) scale(${scale})`;
+      });
+    });
+
+    dock.addEventListener('mouseleave', resetDockItems);
+  }
+
+  // Safety net: iOS Safari can restore the page from cache (e.g. after
+  // tapping a mailto/tel link and returning) with any lingering inline
+  // styles intact, so force a reset whenever the page becomes visible again.
+  window.addEventListener('pageshow', resetDockItems);
 })();
