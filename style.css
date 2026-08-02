@@ -34,17 +34,19 @@ a {
   pointer-events: none;
 }
 
-/* Blocks the aurora glow from reaching the very bottom edge — on iOS
-   Safari the translucent bottom toolbar shows real page content through
-   it (not just theme-color), so a bright blob right at the edge bleeds
-   into the browser chrome itself. */
+/* Fades the aurora glow out before it reaches the very bottom edge — on
+   iOS Safari the translucent bottom toolbar shows real page content
+   through it (not just theme-color), so a bright blob right at the edge
+   bled into the browser chrome. A flat solid block fixed that but left
+   an ugly hard cutoff line; fading it keeps the glow smooth while still
+   landing on solid background color by the true edge. */
 .safe-area-mask {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
-  height: max(32px, env(safe-area-inset-bottom));
-  background: var(--bg-1);
+  height: max(140px, calc(90px + env(safe-area-inset-bottom)));
+  background: linear-gradient(to bottom, transparent, var(--bg-1) 75%);
   z-index: 2;
   pointer-events: none;
 }
