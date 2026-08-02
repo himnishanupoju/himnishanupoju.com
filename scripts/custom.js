@@ -3,8 +3,8 @@
   const canvas = document.getElementById('particles');
   const ctx = canvas.getContext('2d');
   let w, h, particles;
-  const PARTICLE_COUNT = 70;
-  const LINK_DIST = 130;
+  const PARTICLE_COUNT = 45;
+  const LINK_DIST = 110;
   const mouse = { x: null, y: null };
 
   function resize() {
@@ -64,7 +64,7 @@
       }
     }
 
-    requestAnimationFrame(step);
+    if (!document.hidden) requestAnimationFrame(step);
   }
 
   window.addEventListener('resize', () => {
@@ -78,6 +78,9 @@
   window.addEventListener('mouseleave', () => {
     mouse.x = null;
     mouse.y = null;
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) requestAnimationFrame(step);
   });
 
   resize();
