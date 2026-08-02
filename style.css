@@ -321,6 +321,7 @@ a {
 .dock-resume { background: linear-gradient(135deg, var(--accent-blue), var(--accent-teal)); }
 .dock-email { background: linear-gradient(135deg, var(--accent-yellow), var(--accent-red)); }
 .dock-linkedin { background: linear-gradient(135deg, #0a66c2, var(--accent-blue)); }
+.dock-github { background: linear-gradient(135deg, #24292e, #4a5259); }
 
 .dock-tooltip {
   position: absolute;
