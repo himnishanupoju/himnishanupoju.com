@@ -1,141 +1,132 @@
-$(document).ready(function() {
-    $(".title").lettering();
+(() => {
+  // ---------- Canvas particle network ----------
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let w, h, particles;
+  const PARTICLE_COUNT = 70;
+  const LINK_DIST = 130;
+  const mouse = { x: null, y: null };
 
-    lcount = 0;
-    letterArray = ['char1', 'char2', 'char3', 'char4', 'char5', 'char6'];
-    
-    var letterAni = anime({
-      targets: '.title .char1',
-      opacity: 1,
-      scale: [0, 1],
-      delay: 0,
-      elasticity: 10,
-      duration: 300,
-      direction: 'normal',
-      loop: false,
-      autoplay: false,
-      complete: function(){
-        lcount++;
-
-        if( lcount > 7) {
-          $('.first-half').addClass('hidden');
-          $('.half').removeClass('hidden');
-          ani1.play();
-        }
-
-        if( lcount > 6 ) {
-          letterAni.play({
-            targets: '.title',
-            //translateX: [-$(window).width()],
-            //translateY: [-$(window).height()/2],
-            delay: 500,
-            scale: 0,
-            opacity: 0,
-            duration: 300,
-          });
-          return;
-        }
-        letterAni.play({
-          targets: '.title .'+letterArray[lcount]
-        });
-      }
-    });
-
-    letterAni.play();
-});
-
-
-
-
-var nameAni = anime({
-  targets: '.name',
-  opacity: [1],
-  scale: [0,1],
-  delay: [0],
-  direction: 'normal',
-  autoplay: false
-});
-
-var arrays = ['one', 'two', 'three', 'four', 'five'];
-var nameArrays = ['name', 'tag', 'com', 'social', 'email'];
-var count = 0;
-
-var ani1 = anime({
-  targets: '.p-one',
-  opacity: 1,
-  scale: {
-    value: [.5, .7],
-    delay: 500,
-    duration: 250
-  },
-  translateX:
-    {
-      value: function(el, index){
-        return [-$(window).width(), 0];
-      },
-      delay: 500,
-      duration: 500
-    },
-  translateY: {
-    value: [-$(window).height()*2, 0],
-    delay: 500,
-    duration: 500
-  },
-  rotate: [200],
-  elasticity: 400,
-  autoplay: false,
-  delay: 0,
-  borderRadius: 5,
-  direction: 'normal',
-  complete: function(){
-    count++;
-
-    if( count > 5 ) {
-      aniAll.play();
-      return;
-    }
-
-    nameAni.play({
-      targets: '.'+nameArrays[count-1]
-    });
-    ani1.play({
-      targets: '.p-'+arrays[count]
-    });
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
   }
-});
 
-var colors = ['#B23A48', '#06D6A0', '#FFD166', '#E4FFE1', '#247BA0'];
-var currColor = 1;
-var prevColor = -1;
-var aniAll = anime({
-  targets: '.point',
-  elasticity: 400,
-  background: {
-    value: function(el, index){
-      return colors[4-index];
-    },
-    duration: 500,
-    delay: function(el, index) {
-      return index * anime.random(150, 80);
-    }
-  },
-  rotate: [200, 560],
-  scale: [.5, .7],
-  duration: 1000,
-  delay: function(el, index) {
-    return index * anime.random(150, 80);
-  },
-  direction: 'alternate',
-  loop: true,
-  easings: 'easeInOutSine',
-  autoplay: false
-});
+  function initParticles() {
+    particles = Array.from({ length: PARTICLE_COUNT }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      r: Math.random() * 1.5 + 0.5
+    }));
+  }
 
-var click = 1;
-$(document).click(function(e) {
-    // Check for left button
-    if (e.button == 0) {
-        ( click%2 == 0 ) ?  aniAll.play() : aniAll.pause();
-        click++;
+  function step() {
+    ctx.clearRect(0, 0, w, h);
+
+    particles.forEach((p) => {
+      p.x += p.vx;
+      p.y += p.vy;
+
+      if (p.x < 0 || p.x > w) p.vx *= -1;
+      if (p.y < 0 || p.y > h) p.vy *= -1;
+
+      if (mouse.x !== null) {
+        const dx = mouse.x - p.x;
+        const dy = mouse.y - p.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 160 && dist > 0) {
+          p.x -= (dx / dist) * 0.6;
+          p.y -= (dy / dist) * 0.6;
+        }
+      }
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.fill();
+    });
+
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const a = particles[i];
+        const b = particles[j];
+        const dist = Math.hypot(a.x - b.x, a.y - b.y);
+        if (dist < LINK_DIST) {
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.strokeStyle = `rgba(120,160,255,${1 - dist / LINK_DIST})`;
+          ctx.lineWidth = 0.6;
+          ctx.stroke();
+        }
+      }
     }
-});
+
+    requestAnimationFrame(step);
+  }
+
+  window.addEventListener('resize', () => {
+    resize();
+    initParticles();
+  });
+  window.addEventListener('mousemove', (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  });
+  window.addEventListener('mouseleave', () => {
+    mouse.x = null;
+    mouse.y = null;
+  });
+
+  resize();
+  initParticles();
+  step();
+
+  // ---------- Typewriter reveal ----------
+  const cmdEl = document.getElementById('cmd');
+  const output = document.getElementById('output');
+  const dock = document.getElementById('dock');
+  const command = 'whoami';
+  let i = 0;
+
+  function typeCmd() {
+    if (i <= command.length) {
+      cmdEl.textContent = command.slice(0, i);
+      i++;
+      setTimeout(typeCmd, 90 + Math.random() * 60);
+    } else {
+      setTimeout(() => {
+        output.classList.add('show');
+        dock.classList.add('show');
+      }, 350);
+    }
+  }
+
+  setTimeout(typeCmd, 600);
+
+  // ---------- Dock magnification ----------
+  // macOS dock effect: each icon's scale/lift falls off linearly with its
+  // horizontal distance from the cursor, capped at maxDist.
+  const dockItems = [...dock.querySelectorAll('.dock-item')];
+  const maxDist = 110;
+  const maxScale = 1.5;
+
+  dock.addEventListener('mousemove', (e) => {
+    dockItems.forEach((item) => {
+      const rect = item.getBoundingClientRect();
+      const center = rect.left + rect.width / 2;
+      const dist = Math.abs(e.clientX - center);
+      const scale = Math.max(1, maxScale - (dist / maxDist) * (maxScale - 1));
+      const lift = (scale - 1) * 18;
+      item.style.transform = `translateY(${-lift}px) scale(${scale})`;
+    });
+  });
+
+  dock.addEventListener('mouseleave', () => {
+    dockItems.forEach((item) => {
+      item.style.transform = '';
+    });
+  });
+})();
