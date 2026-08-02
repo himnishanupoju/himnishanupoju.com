@@ -322,9 +322,14 @@ a {
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.dock-item:hover .dock-tooltip {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
+/* Hover/magnify only makes sense with a real pointer — on touch devices
+   :hover sticks after a tap (e.g. tapping "email me" and returning from
+   Mail), leaving the icon stuck enlarged with its tooltip open. */
+@media (hover: hover) and (pointer: fine) {
+  .dock-item:hover .dock-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 @media screen and (max-width: 767px) {
