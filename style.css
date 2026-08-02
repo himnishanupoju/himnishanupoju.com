@@ -34,19 +34,19 @@ a {
   pointer-events: none;
 }
 
-/* Fades the aurora glow out before it reaches the very bottom edge — on
-   iOS Safari the translucent bottom toolbar shows real page content
-   through it (not just theme-color), so a bright blob right at the edge
-   bled into the browser chrome. A flat solid block fixed that but left
-   an ugly hard cutoff line; fading it keeps the glow smooth while still
-   landing on solid background color by the true edge. */
+/* Fades the aurora glow out right at the very bottom edge — on iOS
+   Safari the translucent bottom toolbar shows real page content through
+   it (not just theme-color), so a bright blob right at the edge bled
+   into the browser chrome. Kept short and with no explicit color stop
+   (so it interpolates smoothly across its whole height, no flat solid
+   chunk) — the aurora should still flow almost all the way down. */
 .safe-area-mask {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
-  height: max(140px, calc(90px + env(safe-area-inset-bottom)));
-  background: linear-gradient(to bottom, transparent, var(--bg-1) 75%);
+  height: max(48px, calc(30px + env(safe-area-inset-bottom)));
+  background: linear-gradient(to bottom, transparent, var(--bg-1));
   z-index: 2;
   pointer-events: none;
 }
